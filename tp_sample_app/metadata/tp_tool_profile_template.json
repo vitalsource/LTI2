@@ -44,7 +44,7 @@
                         "default_value": "Fabericious is a leading provider of interactive tools for education",
                         "key": "tool.vendor.description"
                     },
-                    "name": {
+                    "vendor_name": {
                         "default_value": "Fab",
                         "key": "tool.vendor.name"
                     },
@@ -104,10 +104,22 @@
                             "variable": "LtiLink.custom.url"
                         }
                     ],
+                    "enabled_capability": [
+                        "User.id",
+                        "Context.id",
+                        "CourseSection.label",
+                        "CourseSection.title",
+                        "Person.name.family",
+                        "Person.name.given",
+                        "Person.email.primary",
+                        "ToolProxy.custom.url",
+                        "ToolProxyBinding.custom.url",
+                        "LtiLink.custom.url"
+                    ],
                     "path": "/settings"
                 }
             ],
-            "name": {
+            "resource_name": {
                 "default_value": "Settings",
                 "key": "resource.name"
             },
@@ -141,66 +153,25 @@
                             "variable": "CourseOffering.label"
                         }
                     ],
+                    "enabled_capability": [
+                        "User.id",
+                        "Context.id",
+                        "CourseSection.label",
+                        "CourseSection.title",
+                        "Person.name.family",
+                        "Person.name.given",
+                        "Person.email.primary"
+                    ],
+
                     "path": "/echoes"
                 }
             ],
-            "name": {
+            "resource_name": {
                 "default_value": "Echo",
                 "key": "resource.name"
             },
             "resource_type": {
                 "code": "echo"
-            }
-        },
-        {
-            "description": {
-                "default_value": "VitalSource reader for XML, PDF, and ePub content",
-                "key": "resource.description"
-            },
-            "message": [
-                {
-                    "message_type": "basic-lti-launch-request",
-                    "parameter": [
-                        {
-                            "name": "vbid"
-                        }
-                    ],
-                    "path": "/books"
-                }
-            ],
-            "name": {
-                "default_value": "Book",
-                "key": "resource.name"
-            },
-            "resource_type": {
-                "code": "book"
-            }
-        },
-        {
-            "description": {
-                "default_value": "Deep-linked VitalSource reader for XML, PDF, and ePub content",
-                "key": "resource.description"
-            },
-            "message": [
-                {
-                    "message_type": "basic-lti-launch-request",
-                    "parameter": [
-                        {
-                            "name": "vbid"
-                        },
-                        {
-                            "name": "book_location"
-                        }
-                    ],
-                    "path": "/bookselections"
-                }
-            ],
-            "name": {
-                "default_value": "BookSelection",
-                "key": "resource.name"
-            },
-            "resource_type": {
-                "code": "bookselection"
             }
         },
         {
@@ -223,54 +194,25 @@
                             "variable": "Result.uri"
                         }
                     ],
+                    "enabled_capability": [
+                        "User.id",
+                        "Context.id",
+                        "CourseSection.label",
+                        "CourseSection.title",
+                        "Person.name.family",
+                        "Person.name.given",
+                        "Person.email.primary"
+                    ],
                     "path": "/iresources"
                 }
             ],
-            "name": {
+            "resource_name": {
                 "default_value": "InteractiveResource",
                 "key": "resource.name"
             },
             "resource_type": {
                 "code": "iresource"
             }
-        },
-        {
-            "description": {
-                "default_value": "VitalSource Bookshelf",
-                "key": "resource.description"
-            },
-            "message": [
-                {
-                    "message_type": "basic-lti-launch-request",
-                    "parameter": [
-                        {
-                            "name": "course_label",
-                            "variable": "CourseOffering.label"
-                        }
-                    ],
-                    "path": "/bookshelves"
-                }
-            ],
-            "name": {
-                "default_value": "Bookshelf",
-                "key": "resource.name"
-            },
-            "resource_type": {
-                "code": "bookshelf"
-            }
-        }
-    ],
-    "service_offered": [
-        {
-            "@id": "{tc_deployment_url}/lti2_tp/ToolProxy.item",
-            "@type": "RestService",
-            "action": [
-                "PUT"
-            ],
-            "endpoint": "{tc_deployment_url}/lti2_tp/tool_proxies/{tp_guid}",
-            "format": [
-                "application/vnd.ims.lti.v2.toolproxy.id+json"
-            ]
-        }
+		} 
     ]
 }
