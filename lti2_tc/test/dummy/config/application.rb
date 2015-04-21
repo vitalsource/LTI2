@@ -2,11 +2,14 @@ require File.expand_path('../boot', __FILE__)
 
 require 'rails/all'
 
+# Require the gems listed in Gemfile, including any gems
+# you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
-require "lti2_tc"
 
-module Dummy
+module Lumos
+
   class Application < Rails::Application
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
@@ -18,6 +21,15 @@ module Dummy
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
-  end
-end
 
+    # Silence locale enforcement deprecation warning by invoking new behavior:
+    #config.i18n.enforce_available_locales = true
+    I18n.config.enforce_available_locales = true
+
+    # Enable escaping HTML in JSON.
+    config.active_support.escape_html_entities_in_json = true
+
+    config.railties_order = [Lti2::Engine, :main_app, :all]
+  end
+
+end

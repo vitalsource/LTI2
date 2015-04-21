@@ -33,25 +33,26 @@ Structure of this repository
 -----------------------------
 The repository structure is as follows:
 
-	LTI2--
+	LTI2 gem--
 		|
 		|
-		--closet			(database backups, common scripts, metadata artifacts)
+		--bin					(common code for subsequent engines and apps)
 		|
 		|
-		--lti2_tc   		(tool consumer engine)
+		--lti2_tc   			(tool consumer engine)
 		|
 		|
-		--lti2_tp			(tool provider engine)
+		----lti2_tc/test/dummy	(Sample Tool Consumer application)
+		|
+		|
+		--lti2_tp				(tool provider engine)
+		|
+		|
+		----lti2_tp/test/dummy	(Sample Tool Provider application)
 		|
 		|
 		--lib/lti2_commons		(library used by both TC and TP)
-		|
-		|
-		--tc_sample_app		(lightweight TC host based on active_admin gem)
-		|
-		|˙
-		--tp_sample_app		(lightweight TP and tool)
+
 		
 
 Getting it running
@@ -65,11 +66,11 @@ Getting it running
 
 4. Start a rails server for the Tool Consumer on port 4000: 'rails s -p 4000'.
 
-5. Create a command prompt for the tool provider.  chdir into <lti_repo>/tp_sample_app.
+5. Create a command prompt for the tool provider.  chdir into <lti_repo>/lti2_tc/test/dummy/
 
 6. [FIRST-TIME ONLY after clone of TP] 'rake init_task:backup'.  This will reset data to base state and ensure that sqlite3 is the current database.  (Instructions below for changing to MySQL.  Recommend running it first as sqlite3).
 
-7. Start a rails server for the Tool Provider on port 5000: 'rails s -p 5000'.
+7. chdir: <lti_repo/lti2_tp/test/dummy.  Start a rails server for the Tool Provider on port 5000: 'rails s -p 5000'.
 
 8. Open a browser and go to: 'http://localhost:4000/admin'.  If you're prompted for a login, username is 'admin@lumos.org', password is 'password'.
 
@@ -148,7 +149,7 @@ Using the Tool Consumer Engine with another host application
 As described above, this distribution uses tc_sample_app as a pseudo LMS.  All of the LTI-specific behavior is mounted into this app using the Rails mountable engine capability.  To use this same engine in another host application the following steps need to be followed.
 
 1. The Gemfile of the host application should access the gem from VST github by including the line:
-	* gem 'lti2_tc', :github => 'vitalsource/lti2_tc'
+	* gem 'lti2', git: 'git@github.com:vitalsource/LTI2-Reference.git'
 
 2. At a rails command-line in the host, import the TC engine migrations into the db migrations of the host:
 	* rake lti2_tc:install:migrations
@@ -169,7 +170,7 @@ Using the Tool Provider Engine with another host application
 As described above, this distribution uses tp_sample_app as a pseudo tool provider.  All of the LTI-specific behavior is mounted into this app using the Rails mountable engine capability.  To use this same engine in another host application the following steps need to be followed.
 
 1. The Gemfile of the host application should access the gem from VST github by including the line:
-	* gem 'lti2_tp', :github => 'vitalsource/lti2_tp'
+	* gem 'lti2', git: 'git@github.com:vitalsource/LTI2-Reference.git'
 
 2. At a rails command-line in the host, import the TP engine migrations into the db migrations of the host:
 	* rake lti2_tp:install:migrations

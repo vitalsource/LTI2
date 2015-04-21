@@ -100,7 +100,7 @@ module Lti2Tp
       query_string = return_url_queries.reverse_merge!(final_hash).to_query
 
       base_url = URI.parse(registration.launch_presentation_return_url)
-      redirect_to "#{base_url.scheme}://#{base_url.host}#{base_url.path}?#{query_string}"
+      redirect_to "#{base_url.scheme}://#{base_url.host}:#{base_url.port}#{base_url.path}?#{query_string}"
     end
 
     def reregister
