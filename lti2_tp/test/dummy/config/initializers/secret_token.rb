@@ -9,4 +9,4 @@
 
 # Make sure your secret_key_base is kept private
 # if you're sharing your code publicly.
-Fabericious::Application.config.secret_key_base = '9f0856313bf3a6a08db04f113ebd57bca743eb0e9ab2014b47086f9be0f2c7d0ac2c69f6bf9e666c67b16fad8bd873e674015fc5caf3943005dccc810be39c8c'
+Dummy::Application.config.secret_key_base = '76464e52011cb57d3c368c064e084a81b683aa9c3b15a4fb783eebb78430944f6961a80cd2e4eb415a85c7a8789b8f8c18f8739726856d0ffab80793531d8859'
