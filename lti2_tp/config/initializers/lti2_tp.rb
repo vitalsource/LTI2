@@ -7,5 +7,3 @@ Rails.application.config.nonce_cache = Cache.new :ttl => NONCE_TIME_TO_LIVE
 if ActiveRecord::Base.connection.table_exists? 'lti2_tp_registries'
   Rails.application.config.tool_provider_registry = Lti2Tp::ToolProviderRegistry.new
 end
-
-Rails.application.config.wire_log = WireLog.new "ToolProvider", File.expand_path("../../../lti2_tc/test/dummy/public/wirelog.html")
