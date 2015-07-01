@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
 
   s.files = Dir['{app,config,db,lib,lti2_tc,lti2_tp}/**/*', 'MIT-LICENSE', 'Rakefile', 'README.rdoc']
 
-  s.add_dependency 'rails', '~> 4.1.6'
+  s.add_dependency 'rails', '> 4.1.6'
 
   # lti2 commons
   s.add_runtime_dependency 'oauth', '~> 0.4.7'
