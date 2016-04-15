@@ -18,6 +18,13 @@ module Lti2Tc
           raise 'Invalid status for deployment request'
         end
       end
+
+      tool_proxy_guid = nil
+      # Old style tool_proxy_guid reassignment happens here
+      # Only comment out to test old-style ('late') tool_proxy_guid creation
+      tool_proxy_guid = UUID.generate
+
+      deployment_request.tool_proxy_guid = tool_proxy_guid
       deployment_request.status = 'submitted'
       deployment_request.save
 
@@ -28,7 +35,7 @@ module Lti2Tc
       tool_consumer_profile.tc_profile_guid = deployment_request.tc_profile_guid
       tool_consumer_profile.save
 
-      html_body = deployment_request.create_lti_message( tc_deployment_url, user.id )
+      html_body = deployment_request.create_lti_message( tc_deployment_url, user.id, tool_proxy_guid )
 
       html_body
     end
@@ -71,7 +78,7 @@ module Lti2Tc
       parameters['lti_message_type'] = 'ToolProxyReregistrationRequest'
 
       key = tool_proxy.first_at( 'tool_proxy_guid' )
-      secret = tool_proxy.first_at( 'security_contract.shared_secret' )
+      secret = tool.secret
 
       signed_request = Signer::create_signed_request( service_endpoint, 'post', key, secret, parameters )
       puts "TC Signed Request: #{signed_request.signature_base_string}"

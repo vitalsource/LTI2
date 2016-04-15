@@ -1,4 +1,6 @@
 
+require 'httparty'
+
 module Lti2Tp
   class RegistrationsController < InheritedResources::Base
     protect_from_forgery :except => :create
@@ -30,6 +32,7 @@ module Lti2Tp
       @registration.tc_profile_url = params['tc_profile_url']
       @registration.reg_key = params['reg_key']
       @registration.reg_password = params['reg_password']
+      @registration.tool_proxy_guid = params['tool_proxy_guid'] if params.has_key? 'tool_proxy_guid'
       @registration.launch_presentation_return_url = params['launch_presentation_return_url']
       @registration.message_type = 'registration'
       @registration.status = 'received'
@@ -50,7 +53,7 @@ module Lti2Tp
       redirect_to "/lti_registration_wips?registration_id=#{@registration.id}&return_url=/lti2_tp/registrations"
     end
 
-    def end_registration
+    def complete_reregistration
       response = pre_process_tenant
       if response.nil?
         return
@@ -62,27 +65,14 @@ module Lti2Tp
 
       @registration = Lti2Tp::Registration.where(:tenant_name => @tenant.tenant_name).first
 
-      json_str = request.body.read
-
       @registration = Registration.where(:tenant_id => @tenant.id).first
-      end_registration_id = request.headers[Registration::HTTP_CORRELATION_ID]
-      (abort_registration("Missing #{Registration::CORRELATION_ID} header") and return) if end_registration_id.nil?
-      (abort_registration("Out of sequence #{Registration::CORRELATION_ID} header") \
-        and return) if end_registration_id != @registration.end_registration_id
+      correlation = params[:correlation]
+      (abort_registration("Missing correlation parameter") and return) if correlation.nil?
+      (abort_registration("Uncorrelated reregistration") \
+        and return) if correlation != @registration.end_registration_id
 
-      begin
-        tool_proxy_disposition_wrapper = JsonWrapper.new(json_str)
-      rescue
-        render :json => 'JSON validation failure', :status => '500'
-      end
-
-      tool_proxy_disposition = tool_proxy_disposition_wrapper.root
-      tool_proxy_guid = tool_proxy_disposition['tool_proxy_guid']
-      tool_proxy_id = tool_proxy_disposition['@id']
-
-      disposition = request.headers[Registration::HTTP_DISPOSITION]
-
-      if disposition != 'commit'
+      method = request.method
+      if method != 'PUT'
         abort_registration("Tool Consumer requested abort") and return
       end
 
@@ -91,40 +81,29 @@ module Lti2Tp
       @registration.proposed_tool_proxy_json = nil
       @registration.end_registration_id = nil
 
-      # recover secret from new tool_proxy
       tool_proxy_wrapper = JsonWrapper.new(@registration.tool_proxy_json)
-      @registration.reg_password = tool_proxy_wrapper.first_at('security_contract.shared_secret')
+      tool_proxy_response_wrapper = JsonWrapper.new(@registration.tool_proxy_response)
 
-      LtiRegistrationWip.change_tenant_secret(@registration.tenant_id, @registration.reg_password)
+      # jump to the wrapper...but don't redirect within a service
+      tp_base_url = Rails.application.config.tool_provider_registry.registry['tp_deployment_url']
+      url = "#{tp_base_url}/complete_reregistration?registration_id=#{@registration.id}"
 
+      logger.info(JSON.dump("http GET to #{url} for #{@registration.reg_key}"))
 
-      @registration.save
+      LtiRegistrationWip.complete_reregistration(@registration.id)
 
-      end_registration_response = {
-          "@context" => "http://purl.imsglobal.org/ctx/lti/v2/ToolProxyId",
-          "@type" => "ToolProxy",
-          "@id" => tool_proxy_id,
-          "tool_proxy_guid" => tool_proxy_guid,
-          "disposition" => 'commit'
-      }
-
-      content_type = 'application/vnd.ims.lti.v2.toolproxy.id+json'
-      logger.info("Exit from Tool/create(POST)--status 201  content-type: #{content_type}")
-      logger.info(JSON.dump(end_registration_response))
-
-      render :json => end_registration_response.to_json, :content_type => content_type, :status => '201'
+      render :nothing => true, :status => '200'
     end
 
     def index
       registration = Lti2Tp::Registration.find( params[:id] )
       final_hash = params.select { |k,v| [ :status, :tool_guid, :lti_errormsg, :lti_errorlog ].include? k.to_sym }
+      final_qs = final_hash.to_query
+      tool_proxy_guid = params[:tool_proxy_guid] if params.has_key? :tool_proxy_guid
+      guid_addend = (tool_proxy_guid.empty?) ? '' : "&tool_proxy_guid=#{tool_proxy_guid}"
 
-      # merge query portion of launch_presentation_return_url and params we add
-      return_url_queries = Rack::Utils.parse_query(URI("#{registration.launch_presentation_return_url}").query)
-      query_string = return_url_queries.reverse_merge!(final_hash).to_query
-
-      base_url = URI.parse(registration.launch_presentation_return_url)
-      redirect_to "#{base_url.scheme}://#{base_url.host}#{base_url.path}?#{query_string}"
+      final_url = "#{get_adjusted_baseurl(registration.launch_presentation_return_url)}#{final_qs}#{guid_addend}"
+      redirect_to final_url
     end
 
     def reregister
@@ -137,7 +116,11 @@ module Lti2Tp
         end
       end
 
-      @registration = Lti2Tp::Registration.where(:tenant_name => @tenant.tenant_name).first
+      # new style lookup
+      @registration = Lti2Tp::Registration.where(:tool_proxy_guid => @tenant.tenant_key).first
+      if @registration.blank?
+        @registration = Lti2Tp::Registration.where(:reg_key => @tenant.tenant_key).first
+      end
 
       @registration.tc_profile_url = params['tc_profile_url']
       @registration.launch_presentation_return_url = params['launch_presentation_return_url']
@@ -199,6 +182,25 @@ module Lti2Tp
 
     def abort_registration(abort_msg)
       render :status => 500, :json => abort_msg
-      end
     end
+
+    def change_secret(tenant, tool_proxy_wrapper, tool_proxy_response_wrapper)
+      if tool_proxy_wrapper.first_at('security_contract.shared_secret').present?
+        final_secret = tool_proxy_wrapper.first_at('security_contract.shared_secret')
+      else
+        if tool_proxy_wrapper.first_at('security_contract.tp_half_shared_secret').present?
+          final_secret = tool_proxy_response_wrapper.first_at('tc_half_shared_secret') \
+          + tool_proxy_wrapper.first_at('security_contract.tp_half_shared_secret')
+        end
+      end
+      final_secret
+    end
+
+    def get_adjusted_baseurl(baseurl)
+      result = baseurl
+      result += (baseurl.include?('?')) ? '&' : '?'
+      result
+    end
+  end
 end
+
