@@ -2,11 +2,10 @@ require_dependency 'lti2_tc/application_controller'
 
 module Lti2Tc
   class ToolSettingsController < ApplicationController
-    skip_before_filter :verify_authenticity_token
+    skip_before_action :verify_authenticity_token, raise: false
 
     def initialize
-      @acceptable_headers = [ 'application/vnd.ims.lti.v2.toolsettings+json',
-                              'application/vnd.ims.lti.v2.toolsettings.simple+json' ]
+      @acceptable_headers = ['application/vnd.ims.lti.v2.toolsettings+json', 'application/vnd.ims.lti.v2.toolsettings.simple+json']
       @tool_setting_binding_map = { :Tool => :ToolProxy, :Context => :ToolProxyBinding, :Ltilink => :LtiLink }
     end
 

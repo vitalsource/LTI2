@@ -15,19 +15,21 @@ Gem::Specification.new do |s|
 
   s.files = Dir['{app,config,db,lib,lti2_tc,lti2_tp}/**/*', 'MIT-LICENSE', 'Rakefile', 'README.rdoc']
 
-  s.add_dependency 'rails', '> 4.1.6'
+  s.add_dependency 'rails', '~> 5.0.0'
 
   # lti2 commons
-  s.add_runtime_dependency 'oauth', '~> 0.4.7'
+  s.add_runtime_dependency 'oauth'
   s.add_runtime_dependency 'httparty'
   s.add_runtime_dependency 'lrucache'
   s.add_runtime_dependency 'jsonpath'
   s.add_runtime_dependency 'uuid'
   s.add_runtime_dependency 'rb-readline'
+  s.add_runtime_dependency 'inherited_resources'
 
   # automated tests
-  s.add_development_dependency 'rspec-rails', '~> 3.1.0'
-  s.add_development_dependency 'shoulda-matchers', '~> 2.5.0'
-  s.add_development_dependency 'mysql2', '~> 0.3.13'
+  s.add_development_dependency 'rspec-rails'
+  s.add_development_dependency 'shoulda-matchers'
+  # s.add_development_dependency 'mysql2', '~> 0.3.13'
   s.add_development_dependency 'sqlite3'
+  # s.add_development_dependency 'minitest-rails'
 end

@@ -1,6 +1,6 @@
 Lti2Tc::Engine.routes.draw do
 
-  get 'tool_proxies_controller/index'
+  get 'tool_proxies/index'
 
   resources :tool_consumer_profiles
 
