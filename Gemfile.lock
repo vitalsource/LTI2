@@ -24,7 +24,7 @@ PATH
       jsonpath
       lrucache
       oauth
-      rails (~> 5.2.0)
+      rails (~> 5.2)
       rb-readline
       uuid
 
