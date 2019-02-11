@@ -12,5 +12,5 @@ gemspec
 
 # To use debugger
 # gem 'debugger'
-gem 'oauth', github: 'oauth-xx/oauth-ruby', branch: 'rails5'
-gem 'inherited_resources', github: 'activeadmin/inherited_resources'
+
+gem 'oauth', git: 'git@github.com:oauth-xx/oauth-ruby.git', branch: 'rails5'
